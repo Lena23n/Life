@@ -3,6 +3,7 @@ function Game (id) {
 	this.holder = null;
 	this.drawer = new Drawer();
 	this.generation = [];
+	this.newGeneration = [];
 	this.fieldSize = {
 		w: 40,
 		h: 40
@@ -49,8 +50,10 @@ Game.prototype =  {
 		var i, j;
 		for (i = 0; i < this.fieldSize.w; i++) {
 			this.generation[i] = [];
+			this.newGeneration[i] = [];
 			for (j = 0; j < this.fieldSize.h; j++) {
 				this.generation[i][j] = this.cellState.DEAD;
+				this.newGeneration[i][j] = this.cellState.DEAD;
 			}
 		}
 	},
@@ -97,11 +100,68 @@ Game.prototype =  {
 		this.changeGameState();
 	},
 
+	findSiblings : function (x, y) {
+
+		var map = {
+			left: [-1, 0],
+			topLeft: [-1, -1],
+			top: [0, -1],
+			topRight: [1, -1],
+			right: [1, 0],
+			bottomRight: [1, 1],
+			bottom: [0, 1],
+			bottomLeft: [-1, 1]
+		};
+
+		var test = [];
+		for (var key in map) {
+			var siblingX = (x+map[key][0]),
+				siblingY = (y+map[key][1]);
+
+			if ((siblingX >= 0 && siblingY >= 0) && (siblingX < this.fieldSize.w && siblingY < this.fieldSize.w )) {
+				test.push([siblingX, siblingY])
+			}
+		}
+		return test;
+	},
+
+	gameLoop : function () {
+		this.findCellsToBirth();
+		this.drawer.draw(this.newGeneration);
+	},
+
+	findCellsToBirth : function () {
+		var i, j, l, siblings,
+			count = 0;
+
+		for(i = 0; i < this.fieldSize.w; i++) {
+			for (j = 0; j < this.fieldSize.h; j++) {
+				siblings = this.findSiblings(i,j);
+
+				for (l = 0; l < siblings.length; l++) {
+					var x = siblings[l][0],
+						y = siblings[l][1];
+
+					if (this.generation[x][y] == this.cellState.ALIVE) {
+						count++;
+					}
+					console.log(count)
+					if (count == 3) {
+						console.log('hi');
+						this.newGeneration[i][j] == this.cellState.ALIVE;
+					}
+				}
+
+			}
+		}
+	},
+
 	changeGameState : function () {
 		switch (this.clickedButton) {
 			case this.clickedButtonState.start:
 				this.isGameStarted = true;
 				console.log('start game function');
+				this.gameLoop();
 				break;
 			case this.clickedButtonState.step:
 				this.isGameStarted = true;
