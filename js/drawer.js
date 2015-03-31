@@ -3,6 +3,10 @@ function Drawer () {
 	this.ctx = null;
 	this.fieldWidth = 500;
 	this.fieldHeight = 500;
+	this.fieldSize = {
+		w: null,
+		h: null
+	};
 	this.holder = null;
 	this.buttonsWrap = null;
 	this.cellState = null;
@@ -21,8 +25,11 @@ Drawer.prototype = {
 		this.generateButtons();
 		this.generateTimeBlock();
 
-		this.cellSize.w = this.fieldWidth / fieldSize.w;
-		this.cellSize.h = this.fieldHeight / fieldSize.h;
+		this.fieldSize.w = fieldSize.w;
+		this.fieldSize.h = fieldSize.h;
+
+		this.cellSize.w = this.fieldWidth / this.fieldSize.w;
+		this.cellSize.h = this.fieldHeight / this.fieldSize.h;
 	},
 
 	generateField : function () {
@@ -64,17 +71,24 @@ Drawer.prototype = {
 	},
 
 	draw : function (array) {
-		var i, j, x, y, text;
+		var i, x, y, text;
 
-		for (i = 0; i < array.length; i++) {
-			for (j = 0; j < array.length; j++) {
-				x = i*this.cellSize.w;
-				y = j*this.cellSize.w;
-				text =  array[i][j];
-
-				this.drawCell(x, y, text);
-			}
+		for(i = 0; i < array.length; i++) {
+			x = (i % this.fieldSize.w) * this.cellSize.w;
+			y = (Math.floor(i / this.fieldSize.h)) * this.cellSize.h;
+			text = array[i];
+			this.drawCell(x, y, text);
 		}
+
+		//for (i = 0; i < array.length; i++) {
+		//	for (j = 0; j < array.length; j++) {
+		//		x = i*this.cellSize.w;
+		//		y = j*this.cellSize.w;
+		//		text =  array[i][j];
+		//
+		//		this.drawCell(x, y, text);
+		//	}
+		//}
 	},
 
 	drawCell : function (x, y, text) {
