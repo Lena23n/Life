@@ -1,4 +1,4 @@
-function Game (id) {
+function Game(id) {
 	this.id = id;
 	this.holder = null;
 	this.drawer = new Drawer();
@@ -19,23 +19,28 @@ function Game (id) {
 		step: 'step',
 		clear: 'clear'
 	};
+	this.gameLoop = null;
+	this.generationCount = null;
 }
 
-Game.prototype =  {
-	init : function () {
+Game.prototype = {
+	init: function () {
 		this.holder = document.getElementById(this.id);
 
 		this.startGame();
 	},
 
-	startGame : function () {
+	startGame: function () {
 		var self = this;
 		this.isGameStarted = false;
+		this.generationCount = '0';
 
 		this.clearHolder();
 		this.drawer.init(this.holder, this.fieldSize, this.cellState);
 		this.fillGameArray();
+		this.drawer.countWrap.innerHTML = this.generationCount;
 		this.drawer.draw(this.generation);
+
 
 		this.drawer.field.addEventListener('click', function (e) {
 			self.clickOnHolderEvent(e);
@@ -44,76 +49,68 @@ Game.prototype =  {
 		this.drawer.buttonsWrap.addEventListener('click', function (e) {
 			self.getClickedButton(e);
 		});
+
+
+		clearInterval(this.gameLoop);
 	},
 
-	fillGameArray : function () {
+	fillGameArray: function () {
 		this.generation = [];
 		this.newGeneration = [];
 		var i,
-			arrayLength = this.fieldSize.w*this.fieldSize.h;
+			arrayLength = this.fieldSize.w * this.fieldSize.h;
 
-		for(i = 0; i < arrayLength; i++) {
+		for (i = 0; i < arrayLength; i++) {
 			this.generation[i] = this.cellState.DEAD;
 			this.newGeneration[i] = this.cellState.DEAD;
 		}
-		//var i, j;
-		//for (i = 0; i < this.fieldSize.w; i++) {
-		//	this.generation[i] = [];
-		//	this.newGeneration[i] = [];
-		//	for (j = 0; j < this.fieldSize.h; j++) {
-		//		this.generation[i][j] = this.cellState.DEAD;
-		//		this.newGeneration[i][j] = this.cellState.DEAD;
-		//	}
-		//}
 	},
 
-	clearHolder : function () {
+	clearHolder: function () {
 		this.holder.innerHTML = "";
 	},
 
-	clickOnHolderEvent : function (e) {
+	clickOnHolderEvent: function (e) {
 		var clickedCellIndex = this.getCoords(e);
 
-		if(!this.isGameStarted) {
+		if (!this.isGameStarted) {
 			this.setCells(clickedCellIndex);
 		}
 	},
 
-	getCoords : function (e) {
+	getCoords: function (e) {
 		var offSetX = this.drawer.field.offsetLeft,
 			offSetY = this.drawer.field.offsetTop,
 			result,
 			x,
 			y;
 
-			x = Math.floor((e.clientX - offSetX)/this.drawer.cellSize.w);
-			y = Math.floor((e.clientY - offSetY)/this.drawer.cellSize.h);
+		x = Math.floor((e.clientX - offSetX) / this.drawer.cellSize.w);
+		y = Math.floor((e.clientY - offSetY) / this.drawer.cellSize.h);
 
 		result = y * this.fieldSize.w + x;
 
 		return result;
 	},
 
-	setCells : function (i) {
+	setCells: function (i) {
 		switch (this.generation[i]) {
 			case this.cellState.ALIVE:
 				this.generation[i] = this.cellState.DEAD;
-				//this.newGeneration[i] = this.cellState.DEAD;
 				break;
 			default:
 				this.generation[i] = this.cellState.ALIVE;
-				//this.newGeneration[i] = this.cellState.ALIVE;
 		}
 
 		this.drawer.draw(this.generation);
 	},
 
-	getClickedButton : function (e) {
+	getClickedButton: function (e) {
 		this.clickedButton = e.target.getAttribute('button');
 		this.changeGameState();
 	},
 
-	getSiblingIndices : function (i) {
+	getSiblingIndices: function (i) {
 		var w = this.fieldSize.w;
 
 		//sibling cell index
@@ -176,52 +173,12 @@ Game.prototype =  {
 		return result;
 	},
 
-	gameLoop : function () {
+	gamePlay: function () {
 		var self = this;
+		clearInterval(this.gameLoop);
 
-		var gameStep = function () {
-			//
-			//var i = 19, count, key, siblings, siblingIndices, isSibling, isSiblingAlive, isCellAlive, isSib;
-			//
-			//siblings = this.findSiblings(i);
-			//siblingIndices = this.getSiblingIndices(i);
-			//
-			//for (key in siblings) {
-			//	isSibling = siblings[key] === true;
-			//	isSib = this.generation[siblingIndices[key]] !== undefined;
-			//	isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
-			//
-			//	if (isSibling /*&& isSiblingAlive*/&& isSib ) {
-			//			console.log(key,'hi');
-			//	}
-			//}
+		this.gameStep = function () {
 
-			//var i, count, key, siblings, siblingIndices, isSibling, isSiblingAlive, isCellDead;
-			//
-			//for (i = 0; i < this.generation.length; i++) {
-			//	siblings = this.findSiblings(i);
-			//	siblingIndices = this.getSiblingIndices(i);
-			//	isCellDead = this.generation[i] == this.cellState.DEAD;
-			//
-			//	if (isCellDead) {
-			//		count = 0;
-			//		for (key in siblings) {
-			//			isSibling = siblings[key] === true;
-			//			var isCellDefined = this.generation[siblingIndices[key]] !== undefined;
-			//			isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
-			//
-			//			if (isSibling && isSiblingAlive && isCellDefined) {
-			//				count++;
-			//			}
-			//		}
-			//		if (count == 3) {
-			//			this.newGeneration[i] = this.cellState.ALIVE;
-			//		}
-			//	}
-			//	}
-			//for (var k = 0; k < this.newGeneration.length; k++) {
-			//	this.newGeneration[k] = this.cellState.DEAD;
-			//}
 			var i, count, key, siblings, siblingIndices, isSibling,
 				isSiblingAlive, isCellAlive, isCellDefined;
 
@@ -243,220 +200,58 @@ Game.prototype =  {
 					}
 				}
 
-				if (!isCellAlive) {
-					if (count == 3) {
-						self.newGeneration[i] = self.cellState.ALIVE;
-						console.log(i,'born');
-					} else {
-						self.newGeneration[i] = self.cellState.DEAD;
-					}
-				} else if (isCellAlive) {
-					if (count < 2) {
-						self.newGeneration[i] = self.cellState.DEAD;
-						console.log(i,'DIE');
-					} else if (count > 3) {
-						self.newGeneration[i] = self.cellState.DEAD;
-						console.log(i,'DIE');
-					}
-					else if ((count == 2) || (count == 3)) {
-						self.newGeneration[i] = self.cellState.ALIVE;
-						console.log(i,'Stay');
-					}
+				switch (isCellAlive) {
+					case true:
+						if (count < 2) {
+							self.newGeneration[i] = self.cellState.DEAD;
+						} else if (count > 3) {
+							self.newGeneration[i] = self.cellState.DEAD;
+						}
+						else if ((count == 2) || (count == 3)) {
+							self.newGeneration[i] = self.cellState.ALIVE;
+						}
+						break;
+					default:
+						if (count == 3) {
+							self.newGeneration[i] = self.cellState.ALIVE;
+						} else {
+							self.newGeneration[i] = self.cellState.DEAD;
+						}
 				}
-
-				//if ((count == 3) && (!isCellAlive)) {
-				//	this.newGeneration[i] = this.cellState.ALIVE;
-				//	console.log(i,'born');
-				//} else if (((count < 2) && isCellAlive)) {
-				//	this.newGeneration[i] = this.cellState.DEAD;
-				//	console.log(i,'DIE');
-				//} else if ((count > 3) && isCellAlive) {
-				//	this.newGeneration[i] = this.cellState.DEAD;
-				//	console.log(i,'DIE');
-				//} else if ((isCellAlive) && ((count == 2) || (count == 3) )) {
-				//	this.newGeneration[i] = this.cellState.ALIVE;
-				//	console.log(i,'STay');
-				//}
-
 			}
 
 			self.generation = self.newGeneration;
 			self.drawer.draw(self.generation);
-			//self.newGeneration = [];
-			//for(var k = 0; k < self.fieldSize.w*self.fieldSize.h; k++) {
-			//
-			//	self.newGeneration[i] = self.cellState.DEAD;
-			//}
+
+			self.generationCount++;
+
+			self.drawer.countWrap.innerHTML = self.generationCount;
 		};
 
-		gameStep();
-		console.log(this.newGeneration);
-
-		//this.gameLoop =  setInterval(gameStep, 1000);
-		//this.gameStep();
-		//this.gameStep2();
+		this.gameLoop = setInterval(this.gameStep, 200);
 	},
 
-	//gameStep2 : function () {
-	//	var i, count, key, siblings, siblingIndices, isSibling, isSiblingAlive, isCellAlive;
-	//
-	//	for (i = 0; i < this.generation.length; i++) {
-	//		siblings = this.findSiblings(i);
-	//		siblingIndices = this.getSiblingIndices(i);
-	//		isCellAlive = this.generation[i] == this.cellState.ALIVE;
-	//
-	//		if(isCellAlive) {
-	//			count = 0;
-	//			for (key in siblings) {
-	//				isSibling = siblings[key] === true;
-	//				var isCellDefined = this.generation[siblingIndices[key]] !== undefined;
-	//				isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
-	//
-	//				if (isSibling && isSiblingAlive && isCellDefined) {
-	//					count++;
-	//				}
-	//			}
-	//		console.log(count);
-	//			if (count < 2 || count >= 3) {
-	//				this.newGeneration[i] = this.cellState.DEAD;
-	//			}
-	//		}
-	//	}
-	//
-	//	this.generation = this.newGeneration;
-	//	this.drawer.draw(this.generation);
-	//},
-
-	gameStep : function () {
-		//
-		//var i = 19, count, key, siblings, siblingIndices, isSibling, isSiblingAlive, isCellAlive, isSib;
-		//
-		//siblings = this.findSiblings(i);
-		//siblingIndices = this.getSiblingIndices(i);
-		//
-		//for (key in siblings) {
-		//	isSibling = siblings[key] === true;
-		//	isSib = this.generation[siblingIndices[key]] !== undefined;
-		//	isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
-		//
-		//	if (isSibling /*&& isSiblingAlive*/&& isSib ) {
-		//			console.log(key,'hi');
-		//	}
-		//}
-
-		//var i, count, key, siblings, siblingIndices, isSibling, isSiblingAlive, isCellDead;
-		//
-		//for (i = 0; i < this.generation.length; i++) {
-		//	siblings = this.findSiblings(i);
-		//	siblingIndices = this.getSiblingIndices(i);
-		//	isCellDead = this.generation[i] == this.cellState.DEAD;
-		//
-		//	if (isCellDead) {
-		//		count = 0;
-		//		for (key in siblings) {
-		//			isSibling = siblings[key] === true;
-		//			var isCellDefined = this.generation[siblingIndices[key]] !== undefined;
-		//			isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
-		//
-		//			if (isSibling && isSiblingAlive && isCellDefined) {
-		//				count++;
-		//			}
-		//		}
-		//		if (count == 3) {
-		//			this.newGeneration[i] = this.cellState.ALIVE;
-		//		}
-		//	}
-		//	}
-		//for (var k = 0; k < this.newGeneration.length; k++) {
-		//	this.newGeneration[k] = this.cellState.DEAD;
-		//}
-		var self = this;
-		var i, count, key, siblings, siblingIndices, isSibling,
-			isSiblingAlive, isCellAlive, isCellDefined;
-
-		for (i = 0; i < self.generation.length; i++) {
-			siblings = self.findSiblings(i);
-			siblingIndices = self.getSiblingIndices(i);
-			isCellAlive = self.generation[i] == self.cellState.ALIVE;
-			count = 0;
-
-			for (key in siblings) {
-				isSibling = siblings[key] === true;
-				isCellDefined = self.generation[siblingIndices[key]] !== undefined;
-				isSiblingAlive = self.generation[siblingIndices[key]] == self.cellState.ALIVE;
-
-				if (isSibling && isSiblingAlive && isCellDefined) {
-					count++;
-				}
-			}
-
-			if (!isCellAlive) {
-				if (count == 3) {
-					self.newGeneration[i] = self.cellState.ALIVE;
-						console.log(i,'born');
-				} else {
-					self.newGeneration[i] = self.cellState.DEAD;
-				}
-			} else if (isCellAlive) {
-				if (count < 2) {
-					self.newGeneration[i] = self.cellState.DEAD;
-						console.log(i,'DIE');
-				} else if (count > 3) {
-					self.newGeneration[i] = self.cellState.DEAD;
-					console.log(i,'DIE');
-				}
-				else if ((count == 2) || (count == 3)) {
-					self.newGeneration[i] = self.cellState.ALIVE;
-						console.log(i,'Stay');
-				}
-			}
-
-			//if ((count == 3) && (!isCellAlive)) {
-			//	this.newGeneration[i] = this.cellState.ALIVE;
-			//	console.log(i,'born');
-			//} else if (((count < 2) && isCellAlive)) {
-			//	this.newGeneration[i] = this.cellState.DEAD;
-			//	console.log(i,'DIE');
-			//} else if ((count > 3) && isCellAlive) {
-			//	this.newGeneration[i] = this.cellState.DEAD;
-			//	console.log(i,'DIE');
-			//} else if ((isCellAlive) && ((count == 2) || (count == 3) )) {
-			//	this.newGeneration[i] = this.cellState.ALIVE;
-			//	console.log(i,'STay');
-			//}
-
-		}
-
-		self.generation = self.newGeneration;
-		console.log(self.generation);
-		this.drawer.draw(self.generation);
-
-		for(var k = 0; k < self.newGeneration.length; k++) {
-			self.newGeneration[i] = self.cellState.DEAD;
-		}
-	},
-
-	changeGameState : function () {
+	changeGameState: function () {
 		switch (this.clickedButton) {
 			case this.clickedButtonState.start:
 				this.isGameStarted = true;
-				console.log('start game function');
-				this.gameLoop();
+				this.gamePlay();
 				break;
+
 			case this.clickedButtonState.step:
 				this.isGameStarted = true;
-				this.gameLoop();
-				console.log('step game function');
+				clearInterval(this.gameLoop);
+				this.gameStep();
 				break;
+
 			case this.clickedButtonState.clear:
 				this.startGame();
-				console.log('clear timeout');
 				break;
 		}
 	}
 };
 
-function pageLoaded () {
+function pageLoaded() {
 	var game = new Game('game-wrap');
 	game.init();
 }

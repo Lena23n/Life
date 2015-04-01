@@ -14,6 +14,7 @@ function Drawer () {
 		w: null,
 		h: null
 	};
+	this.countWrap = null;
 }
 
 Drawer.prototype = {
@@ -63,7 +64,15 @@ Drawer.prototype = {
 	},
 
 	generateTimeBlock : function () {
-		this.generateDOMElement('div', 'Generation: 0', 'class', 'timer');
+		var div = document.createElement('div');
+		this.countWrap = document.createElement('span');
+
+		div.setAttribute('class', 'generation');
+		div.innerHTML = 'Generation: ';
+
+		this.attachToDOM(this.buttonsWrap, div);
+		this.attachToDOM(div, this.countWrap);
+
 	},
 
 	attachToDOM : function (holder, child) {
@@ -80,15 +89,6 @@ Drawer.prototype = {
 			this.drawCell(x, y, text);
 		}
 
-		//for (i = 0; i < array.length; i++) {
-		//	for (j = 0; j < array.length; j++) {
-		//		x = i*this.cellSize.w;
-		//		y = j*this.cellSize.w;
-		//		text =  array[i][j];
-		//
-		//		this.drawCell(x, y, text);
-		//	}
-		//}
 	},
 
 	drawCell : function (x, y, text) {
