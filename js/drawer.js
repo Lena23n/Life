@@ -15,7 +15,12 @@ function Drawer () {
 		h: null
 	};
 	this.countWrap = null;
+	this.speedController = {
+		wrap: undefined,
+		button: undefined
+	}
 }
+
 
 Drawer.prototype = {
 	init : function (holder, fieldSize, cellState) {
@@ -25,6 +30,7 @@ Drawer.prototype = {
 		this.generateField();
 		this.generateButtons();
 		this.generateTimeBlock();
+		this.generateSpeedController();
 
 		this.fieldSize.w = fieldSize.w;
 		this.fieldSize.h = fieldSize.h;
@@ -75,6 +81,15 @@ Drawer.prototype = {
 
 	},
 
+	generateSpeedController : function () {
+		this.speedController.wrap = document.createElement('div');
+		this.speedController.button = document.createElement('span');
+
+		this.speedController.wrap.setAttribute('class','speed-controller');
+		this.attachToDOM(this.holder, this.speedController.wrap);
+		this.attachToDOM(this.speedController.wrap, this.speedController.button);
+	},
+
 	attachToDOM : function (holder, child) {
 		holder.appendChild(child);
 	},
@@ -92,7 +107,6 @@ Drawer.prototype = {
 	},
 
 	drawCell : function (x, y, text) {
-
 		switch (text) {
 			case this.cellState.DEAD:
 				this.ctx.fillStyle = 'black';

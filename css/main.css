@@ -46,6 +46,28 @@ div {
 	background: #ffffff;
 }
 
+.speed-controller {
+	height: 10px;
+	margin-top: 20px;
+	border-radius: 50px;
+	background: #333;
+	position: relative;
+	box-shadow: 0 1px 1px rgba(0,0,0,0.7);
+}
+
+.speed-controller  span {
+	position: absolute;
+	background: #ffffff;
+	display: block;
+	border-radius: 50%;
+	height: 18px;
+	width: 18px;
+	left: 0;
+	top: -4px;
+	cursor: pointer;
+	box-shadow: 0 0 1px rgba(0,0,0,0.4);
+}
+
 canvas {
 	display: block;
 	margin: 0 auto;

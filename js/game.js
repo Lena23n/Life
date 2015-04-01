@@ -19,8 +19,10 @@ function Game(id) {
 		step: 'step',
 		clear: 'clear'
 	};
-	this.gameLoop = null;
+	this.speed = 100;
+	this.newSpeed = null;
 	this.generationCount = null;
+	this.isMouseHolded = false;
 }
 
 Game.prototype = {
@@ -32,8 +34,10 @@ Game.prototype = {
 
 	startGame: function () {
 		var self = this;
+
 		this.isGameStarted = false;
 		this.generationCount = '0';
+		this.newSpeed = 0;
 
 		this.clearHolder();
 		this.drawer.init(this.holder, this.fieldSize, this.cellState);
@@ -50,8 +54,19 @@ Game.prototype = {
 			self.getClickedButton(e);
 		});
 
+		this.drawer.speedController.wrap.addEventListener('mousedown', function (e) {
+			self.isMouseHolded = true;
+			self.mouseMoveEvent(e);
+		});
 
-		clearInterval(this.gameLoop);
+		window.addEventListener('mousemove', function (e) {
+			self.mouseMoveEvent(e);
+		});
+
+		window.addEventListener('mouseup', function () {
+			self.isMouseHolded = false;
+			self.changeSpeed();
+		});
 	},
 
 	fillGameArray: function () {
@@ -174,14 +189,20 @@ Game.prototype = {
 	},
 
 	gamePlay: function () {
-		var self = this;
-		clearInterval(this.gameLoop);
+		var self = this,
+			startTime = 0,
+			dTime = 0,
+			now = 0,
+			gameStep;
 
-		this.gameStep = function () {
+		startTime = Date.now();
+
+		gameStep = function () {
+			now = Date.now();
+			dTime = now - startTime;
 
 			var i, count, key, siblings, siblingIndices, isSibling,
 				isSiblingAlive, isCellAlive, isCellDefined;
-
 			self.newGeneration = [];
 
 			for (i = 0; i < self.generation.length; i++) {
@@ -221,14 +242,52 @@ Game.prototype = {
 			}
 
 			self.generation = self.newGeneration;
-			self.drawer.draw(self.generation);
 
-			self.generationCount++;
+			if (dTime > self.speed) {
+				startTime = now;
+				self.drawer.draw(self.generation);
+				console.log(self.speed);
+				self.generationCount++;
+				self.drawer.countWrap.innerHTML = self.generationCount;
+			}
 
-			self.drawer.countWrap.innerHTML = self.generationCount;
+			if (self.isGameStarted) {
+				requestAnimationFrame(gameStep);
+			} else if (!self.isGameStarted) {
+				self.drawer.draw(self.generation);
+				self.generationCount++;
+				self.drawer.countWrap.innerHTML = self.generationCount;
+			}
 		};
 
-		this.gameLoop = setInterval(this.gameStep, 200);
+		gameStep();
+	},
+
+	mouseMoveEvent : function (e) {
+		var offSetX, speedButton, x, speedPerPixel;
+
+		offSetX = this.drawer.speedController.wrap.offsetLeft;
+
+		x = e.clientX - offSetX;
+
+		if (x < 0) {
+			x = 0;
+		} else if (x > this.drawer.fieldWidth) {
+			x = this.drawer.fieldWidth;
+		}
+
+		if(this.isMouseHolded) {
+			speedButton = this.drawer.speedController.button;
+			speedButton.style.left = x - 9 + 'px';
+			speedPerPixel = 200/this.drawer.fieldWidth;
+
+			this.newSpeed = Math.round(x*speedPerPixel);
+			console.log(this.newSpeed);
+		}
+	},
+
+	changeSpeed : function () {
+		this.speed = this.newSpeed;
 	},
 
 	changeGameState: function () {
@@ -239,12 +298,12 @@ Game.prototype = {
 				break;
 
 			case this.clickedButtonState.step:
-				this.isGameStarted = true;
-				clearInterval(this.gameLoop);
-				this.gameStep();
+				this.isGameStarted = false;
+				this.gamePlay();
 				break;
 
 			case this.clickedButtonState.clear:
+				this.isGameStarted = false;
 				this.startGame();
 				break;
 		}
