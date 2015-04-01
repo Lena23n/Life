@@ -23,6 +23,7 @@ function Game(id) {
 	this.newSpeed = null;
 	this.generationCount = null;
 	this.isMouseHolded = false;
+	this.isGameLoopActive = false;
 }
 
 Game.prototype = {
@@ -193,74 +194,80 @@ Game.prototype = {
 			startTime = 0,
 			dTime = 0,
 			now = 0,
-			gameStep;
+			tick;
+
+
+		if (this.isGameLoopActive) {
+			return false
+		}
 
 		startTime = Date.now();
 
-		gameStep = function () {
+		tick = function () {
 			now = Date.now();
 			dTime = now - startTime;
 
-			var i, count, key, siblings, siblingIndices, isSibling,
-				isSiblingAlive, isCellAlive, isCellDefined;
-			self.newGeneration = [];
-
-			for (i = 0; i < self.generation.length; i++) {
-				siblings = self.findSiblings(i);
-				siblingIndices = self.getSiblingIndices(i);
-				isCellAlive = self.generation[i] == self.cellState.ALIVE;
-				count = 0;
-
-				for (key in siblings) {
-					isSibling = siblings[key] === true;
-					isCellDefined = self.generation[siblingIndices[key]] !== undefined;
-					isSiblingAlive = self.generation[siblingIndices[key]] == self.cellState.ALIVE;
-
-					if (isSibling && isSiblingAlive && isCellDefined) {
-						count++;
-					}
-				}
-
-				switch (isCellAlive) {
-					case true:
-						if (count < 2) {
-							self.newGeneration[i] = self.cellState.DEAD;
-						} else if (count > 3) {
-							self.newGeneration[i] = self.cellState.DEAD;
-						}
-						else if ((count == 2) || (count == 3)) {
-							self.newGeneration[i] = self.cellState.ALIVE;
-						}
-						break;
-					default:
-						if (count == 3) {
-							self.newGeneration[i] = self.cellState.ALIVE;
-						} else {
-							self.newGeneration[i] = self.cellState.DEAD;
-						}
-				}
-			}
-
-			self.generation = self.newGeneration;
-
 			if (dTime > self.speed) {
 				startTime = now;
-				self.drawer.draw(self.generation);
 				console.log(self.speed);
-				self.generationCount++;
-				self.drawer.countWrap.innerHTML = self.generationCount;
+				self.gameStep();
 			}
 
 			if (self.isGameStarted) {
-				requestAnimationFrame(gameStep);
+				requestAnimationFrame(tick);
 			} else if (!self.isGameStarted) {
-				self.drawer.draw(self.generation);
-				self.generationCount++;
-				self.drawer.countWrap.innerHTML = self.generationCount;
+				self.gameStep();
 			}
 		};
 
-		gameStep();
+		tick();
+	},
+
+	gameStep : function () {
+		var i, count, key, siblings, siblingIndices, isSibling,
+			isSiblingAlive, isCellAlive, isCellDefined;
+		this.newGeneration = [];
+
+		for (i = 0; i < this.generation.length; i++) {
+			siblings = this.findSiblings(i);
+			siblingIndices = this.getSiblingIndices(i);
+			isCellAlive = this.generation[i] == this.cellState.ALIVE;
+			count = 0;
+
+			for (key in siblings) {
+				isSibling = siblings[key] === true;
+				isCellDefined = this.generation[siblingIndices[key]] !== undefined;
+				isSiblingAlive = this.generation[siblingIndices[key]] == this.cellState.ALIVE;
+
+				if (isSibling && isSiblingAlive && isCellDefined) {
+					count++;
+				}
+			}
+
+			switch (isCellAlive) {
+				case true:
+					if (count < 2) {
+						this.newGeneration[i] = this.cellState.DEAD;
+					} else if (count > 3) {
+						this.newGeneration[i] = this.cellState.DEAD;
+					}
+					else if ((count == 2) || (count == 3)) {
+						this.newGeneration[i] = this.cellState.ALIVE;
+					}
+					break;
+				default:
+					if (count == 3) {
+						this.newGeneration[i] = this.cellState.ALIVE;
+					} else {
+						this.newGeneration[i] = this.cellState.DEAD;
+					}
+			}
+		}
+		this.generation = this.newGeneration;
+
+		this.drawer.draw(this.generation);
+		this.generationCount++;
+		this.drawer.countWrap.innerHTML = this.generationCount;
 	},
 
 	mouseMoveEvent : function (e) {
@@ -295,15 +302,18 @@ Game.prototype = {
 			case this.clickedButtonState.start:
 				this.isGameStarted = true;
 				this.gamePlay();
+				this.isGameLoopActive = true;
 				break;
 
 			case this.clickedButtonState.step:
 				this.isGameStarted = false;
+				this.isGameLoopActive = false;
 				this.gamePlay();
 				break;
 
 			case this.clickedButtonState.clear:
 				this.isGameStarted = false;
+				this.isGameLoopActive = false;
 				this.startGame();
 				break;
 		}
