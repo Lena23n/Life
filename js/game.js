@@ -227,6 +227,7 @@ Game.prototype = {
 				}
 
 				requestAnimationFrame(tick);
+
 			} else if (self.isGameStarted === false) {
 				self.gameStep();
 			}
@@ -323,7 +324,7 @@ Game.prototype = {
 
 			case this.clickedButtonState.clear:
 				this.isGameStarted = false;
-				this.isGameLoopActive = true;
+				this.isGameLoopActive = false;
 				this.startGame();
 				break;
 		}
